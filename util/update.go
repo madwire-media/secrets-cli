@@ -2,7 +2,6 @@ package util
 
 import (
 	"archive/tar"
-	"bufio"
 	"compress/gzip"
 	"encoding/json"
 	"errors"
@@ -40,7 +39,6 @@ type autoUpdater struct {
 	init         bool
 	buildVersion string
 	config       autoUpdaterConfig
-	netrcToken   string
 }
 
 type autoUpdaterConfig struct {
@@ -235,65 +233,6 @@ func (updater *autoUpdater) checkForUpdate(force bool) (*updatedRelease, error) 
 	}
 
 	return &update, nil
-}
-
-func tryExtractTokenFromNetrc() (string, error) {
-	var netrcFilename string
-
-	switch runtime.GOOS {
-	case "linux", "darwin":
-		home, err := os.UserHomeDir()
-		if err != nil {
-			return "", err
-		}
-
-		netrcFilename = home + "/.netrc"
-
-	case "windows":
-		home, err := os.UserHomeDir()
-		if err != nil {
-			return "", err
-		}
-
-		netrcFilename = home + "/_netrc"
-
-	default:
-		return "", nil
-	}
-
-	file, err := os.Open(netrcFilename)
-	if err != nil {
-		// If there was an error, treat it like the file doesn't exist
-		return "", nil
-	}
-	defer file.Close()
-
-	var machine string
-
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		text := strings.TrimSpace(scanner.Text())
-
-		if strings.HasPrefix(text, "machine ") {
-			machine = strings.TrimSpace(text[8:])
-		} else if strings.HasPrefix(text, "password ") {
-			if machine == "github.com" {
-				token := strings.TrimSpace(text[9:])
-
-				// Personal access tokens are exactly 40 characters
-				match, err := regexp.Match(`^[a-fA-F0-9]{40}$`, []byte(token))
-				if err == nil && match {
-					return token, nil
-				}
-			}
-		}
-	}
-
-	if err := scanner.Err(); err != nil {
-		return "", err
-	}
-
-	return "", nil
 }
 
 func (update *updatedRelease) apply(restart bool) error {
