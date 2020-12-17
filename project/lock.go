@@ -1,14 +1,20 @@
 package project
 
 import (
+	"bufio"
+	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"io/ioutil"
+	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/madwire-media/secrets-cli/types"
 	"github.com/madwire-media/secrets-cli/util"
+	"github.com/madwire-media/secrets-cli/vars"
+	"github.com/ryanuber/go-glob"
 	"gopkg.in/yaml.v3"
 )
 
@@ -49,6 +55,11 @@ func (project *Project) readLockfile() error {
 }
 
 func (project *Project) saveCurrentState() error {
+	err := project.ensureLockfileInGitignore()
+	if err != nil {
+		return err
+	}
+
 	filename := filepath.Join(project.path, "secrets.lock")
 
 	lockBytes, err := yaml.Marshal(&project.currentState)
@@ -128,6 +139,50 @@ func (project *Project) computeCurrentState(
 	}
 
 	return nil
+}
+
+func (project *Project) ensureLockfileInGitignore() error {
+	// Don't worry about changing the .gitignore in CI/CD mode
+	if vars.IsCICD {
+		return nil
+	}
+
+	filename := filepath.Join(project.path, ".gitignore")
+
+	gitignore, err := ioutil.ReadFile(filename)
+	var newGitignore string
+
+	if os.IsNotExist(err) {
+		newGitignore = "/secrets.lock\n"
+	} else {
+		scanner := bufio.NewScanner(bytes.NewReader(gitignore))
+		for scanner.Scan() {
+			text := scanner.Text()
+
+			hashIdx := strings.Index(text, "#")
+			if hashIdx > 0 {
+				text = text[hashIdx:]
+			}
+
+			text = strings.TrimSpace(text)
+			text = strings.TrimLeft(text, "/")
+
+			// .gitignore already has matching line for secrets.lock
+			if glob.Glob(text, "secrets.lock") {
+				return nil
+			}
+		}
+
+		newGitignore = string(gitignore)
+
+		if newGitignore[len(newGitignore)-1:] != "\n" {
+			newGitignore += "\n"
+		}
+
+		newGitignore += "/secrets.lock\n"
+	}
+
+	return ioutil.WriteFile(filename, []byte(newGitignore), 0664)
 }
 
 func hashValue(value interface{}) (string, error) {
