@@ -455,6 +455,11 @@ func (project *Project) pullSecret(
 	fileState.LocalHash = hash
 	fileState.LocalFormat = util.FormatToName(fetchedSecret.Format())
 
+	err = os.MkdirAll(filepath.Dir(correctedFilename), 0777)
+	if err != nil {
+		return err
+	}
+
 	err = ioutil.WriteFile(
 		correctedFilename,
 		[]byte(formattedData),
