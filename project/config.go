@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -70,6 +71,16 @@ func OpenProject() (*Project, error) {
 	err = yaml.Unmarshal(text, &project.Config)
 	if err != nil {
 		return nil, err
+	}
+
+	secretFilenames := make(map[string]struct{})
+
+	for _, secret := range project.Config.Secrets {
+		if _, ok := secretFilenames[secret.File]; ok {
+			return nil, fmt.Errorf("Duplicate filename in config: %s", secret.File)
+		}
+
+		secretFilenames[secret.File] = struct{}{}
 	}
 
 	if err := project.loadClasses(); err != nil {
