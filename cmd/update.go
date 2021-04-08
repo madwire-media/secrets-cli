@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/madwire-media/secrets-cli/util"
 	"github.com/spf13/cobra"
@@ -15,6 +16,7 @@ var updateCmd = &cobra.Command{
 		err := util.TryManualUpdate()
 		if err != nil {
 			fmt.Println("Error during update:", err)
+			os.Exit(1)
 		}
 	},
 }

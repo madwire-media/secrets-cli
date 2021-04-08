@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/madwire-media/secrets-cli/project"
@@ -26,6 +27,7 @@ use. Secrets without an assigned class will always be synced.`,
 		openProject, err := project.OpenProject()
 		if err != nil {
 			fmt.Println("Error opening project:", err)
+			os.Exit(1)
 			return
 		}
 
@@ -66,6 +68,7 @@ use. Secrets without an assigned class will always be synced.`,
 		err = openProject.Sync(options)
 		if err != nil {
 			fmt.Println("Error syncing secrets:", err)
+			os.Exit(1)
 			return
 		}
 	},
