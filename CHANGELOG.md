@@ -1,4 +1,7 @@
 # Changelog
+## `v1.0.4`
+* Fix a bug where the token cache may be loaded as null
+
 ## `v1.0.3`
 * Log a fatal error when there are multiple secrets at the same file path
 * Fix several cases where fatal errors returned a `0` exit code
