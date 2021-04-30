@@ -33,14 +33,16 @@ func (controller *vaultController) Init() error {
 		return nil
 	}
 
-	config := vaultConfig{
-		TokenCache: make(map[string]cachedToken),
-	}
+	config := vaultConfig{}
 
 	if !vars.IsCICD {
 		err := util.LoadConfig("vault", &config)
 		if err != nil {
 			return err
+		}
+
+		if config.TokenCache == nil {
+			config.TokenCache = make(map[string]cachedToken)
 		}
 
 		needToSave := false
