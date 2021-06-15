@@ -139,7 +139,7 @@ func getLoginAuth(host string, flags *pflag.FlagSet) (*types.VaultAuth, error) {
 	} else if password != "" {
 		return nil, errors.New("password is defined but no username is defined")
 	} else if roleID != "" {
-		if secretID != "" {
+		if secretID == "" {
 			if !vars.IsTTY {
 				return nil, errors.New("must specify --secret-id or use a TTY")
 			}
