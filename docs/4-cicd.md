@@ -10,6 +10,8 @@ CI/CD mode will also disable all user prompts as well as any local settings.
 ## External auth files
 In CI/CD mode you will need to provide authentication credentials in your own files. The flag `--auth-config` can be specified one or more times to reference JSON files with auth information. You can also do this outside of CI/CD mode, but it's usually not necessary.
 
+You can also use `secrets config login --save-to=<auth file>` to generate or edit an external auth file. If no TTY is available or CICD mode is enabled, all of the login options are available via command-line arguments too.
+
 ### Cheat Sheet
 
 ```json

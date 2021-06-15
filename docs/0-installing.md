@@ -4,10 +4,12 @@ To install, download the latest release for your OS from GitHub, extract it, and
 And that's it! No package managers, no additional files or libraries, it's an entirely self-contained program.
 
 ## Updating
-If you have auto-update turned on, your executable will update itself to the latest version within 24 hours of release. Otherwise you can check for updates with the `secrets update` command.
+If you have auto-update turned on, your executable will update itself to the latest version within 24 hours of release. Otherwise you can check for updates with the `secrets self-update` command.
 
 The update process replaces the currently running `secrets` executable with the new version, which may require elevated permissions. In that case, the command will execute itself with sudo on Linux and macOS, or on Windows it will trigger the User Account Control prompt.
 
 If an update is triggered automatically, then the new `secrets` executable will replace the current process with the same arguments and environment variables in order to carry out your original command.
+
+When you first run `secrets`, it will ask you if you want to enable automatic updates, but you can configure it later by running `secrets config autoupdate` too.
 
 Next: [Getting Started](./1-getting-started.md)

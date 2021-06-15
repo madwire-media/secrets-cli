@@ -28,6 +28,8 @@ At the moment this project only supports secrets from Vault, and there are only 
 
 Once you have your `secrets.yaml` file ready, run `secrets sync` to sync between the secrets stores and your local filesystem. The secrets CLI keeps track of changes in a local lockfile (which will be automatically added to your .gitignore), so when secrets change remotely or locally then the CLI can intelligently decide what to do.
 
-Also since this example connects to two different Vault instances, it will need credentials to access both instances. When you run `secrets sync` in a terminal, it will ask you for those credentials and store them locally. (see the [CI/CD](./4-cicd.md#external-auth) docs for non-tty authentication)
+Also since this example connects to two different Vault instances, it will need credentials to access both instances. When you run `secrets sync` in a terminal, it will ask you for those credentials and store them locally, or you can run `secrets config login` to (re)configure credentials as well. (see the [CI/CD](./4-cicd.md#external-auth) docs for non-tty authentication)
+
+Since v1.1.0, there is a helper command for adding secrets to your `secrets.yaml` file: `secrets add <file>`. It will provide an interactive UI that guides you through the different secret options, and then appends the generated secret config to the end of your `secrets.yaml`.
 
 Next: [`secrets.yaml`](./2-secrets-yaml.md)
