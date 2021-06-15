@@ -1,4 +1,7 @@
 # Changelog
+## `v1.1.1`
+* Fix `secrets config login` AppRole auth with credentials supplied as arguments
+
 ## `v1.1.0`
 * Add OIDC auth support
 * Add auth selector UI
