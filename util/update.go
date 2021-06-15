@@ -36,9 +36,8 @@ const (
 var updater autoUpdater
 
 type autoUpdater struct {
-	init         bool
-	buildVersion string
-	config       autoUpdaterConfig
+	init   bool
+	config autoUpdaterConfig
 }
 
 type autoUpdaterConfig struct {
@@ -105,6 +104,41 @@ func TryManualUpdate() error {
 	return nil
 }
 
+// GetAutoUpdate gets if automatic updates are enabled
+func GetAutoUpdate() (bool, error) {
+	config := autoUpdaterConfig{}
+
+	err := LoadConfig(updateConfigName, &config)
+	if err != nil {
+		return false, err
+	}
+
+	return *config.AutoUpdate, nil
+}
+
+// SetAutoUpdate configures if automatic updates are enabled
+func SetAutoUpdate(shouldAutoUpdate bool) (bool, error) {
+	config := autoUpdaterConfig{}
+
+	err := LoadConfig(updateConfigName, &config)
+	if err != nil {
+		return false, err
+	}
+
+	changed := *config.AutoUpdate != shouldAutoUpdate
+
+	if changed {
+		config.AutoUpdate = &shouldAutoUpdate
+
+		err = SaveConfig(updateConfigName, &config)
+		if err != nil {
+			return false, err
+		}
+	}
+
+	return changed, nil
+}
+
 func (updater *autoUpdater) Init() error {
 	if vars.IsCICD {
 		return errors.New("Cannot update in CI/CD mode")
@@ -129,11 +163,6 @@ func (updater *autoUpdater) Init() error {
 
 		config.AutoUpdate = &shouldAutoUpdate
 
-		configDir, err := GetConfigDir()
-		if err != nil {
-			return err
-		}
-
 		var otherState string
 
 		if shouldAutoUpdate {
@@ -142,13 +171,12 @@ func (updater *autoUpdater) Init() error {
 			otherState = "enable"
 		}
 
-		fmt.Println("You can " + otherState + " this later by editing the file at " + configDir + updateConfigName + ".json")
+		fmt.Println("You can " + otherState + " this later by running 'secrets config autoupdate'")
 
 		shouldSave = true
 	}
 
 	updater.init = true
-	updater.buildVersion = vars.BuildVersion
 	updater.config = config
 
 	if shouldSave {

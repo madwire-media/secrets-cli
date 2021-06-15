@@ -181,15 +181,23 @@ type SecretConfig struct {
 }
 
 // Mapping represents a data or text mapping of a Vault key/value secret
-// document
+// document to file contents
 type Mapping struct {
-	FromData *struct {
-		Format string         `yaml:"format"`
-		Path   *[]interface{} `yaml:"path"`
-	} `yaml:"fromData"`
-	FromText *struct {
-		Path []interface{} `yaml:"path"`
-	} `yaml:"fromText"`
+	FromData *FromDataMapping `yaml:"fromData,omitempty"`
+	FromText *FromTextMapping `yaml:"fromText,omitempty"`
+}
+
+// FromDataMapping contains the settings for mapping a subset of the data of a
+// Vault key/value secret document to file contents
+type FromDataMapping struct {
+	Format string         `yaml:"format"`
+	Path   *[]interface{} `yaml:"path,omitempty"`
+}
+
+// FromTextMapping contains the settings for mapping a string value in the data
+// of a Vault key/value secret document to file contents
+type FromTextMapping struct {
+	Path []interface{} `yaml:"path"`
 }
 
 type rawSecret struct {

@@ -94,7 +94,7 @@ func (controller *vaultController) PrepareForURL(parsedURL *url.URL) error {
 		if shouldCache {
 			cached := cachedToken{
 				Token:   *optToken,
-				Expires: time.Now().Unix() + 30*24*60*60,
+				Expires: time.Now().Unix() + 32*24*60*60,
 			}
 			controller.config.TokenCache[key] = cached
 
@@ -126,11 +126,17 @@ func (controller *vaultController) GetTokenForURL(parsedURL *url.URL) (string, e
 		if valid {
 			controller.validatedTokens[key] = struct{}{}
 
-			cached.Expires = time.Now().UTC().Unix() + 30*24*60*60
-			err := controller.save()
-			if err != nil {
-				return "", err
-			}
+			// Tokens don't renew on their own, and even when they're renewed,
+			// they can only last a certain maximum lifetime. The default for
+			// this is 768h or 32d. In this case though, we're just validating
+			// an existing token so it's (with default settings) guaranteed that
+			// even if we renewed this token it wouldn't help anything.
+
+			// cached.Expires = time.Now().UTC().Unix() + 32*24*60*60
+			// err := controller.save()
+			// if err != nil {
+			// 	return "", err
+			// }
 
 			return cached.Token, nil
 		}
@@ -148,7 +154,7 @@ func (controller *vaultController) GetTokenForURL(parsedURL *url.URL) (string, e
 	if shouldCache {
 		cached := cachedToken{
 			Token:   token,
-			Expires: time.Now().UTC().Unix() + 30*24*60*60,
+			Expires: time.Now().UTC().Unix() + 32*24*60*60,
 		}
 
 		controller.config.TokenCache[key] = cached

@@ -102,3 +102,18 @@ func LoadExternalConfig(filename string, data interface{}) error {
 
 	return nil
 }
+
+// SaveExternalConfig saves a file outside of the default user config directory
+func SaveExternalConfig(filename string, data interface{}) error {
+	text, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+
+	err = ioutil.WriteFile(filename, text, 0666)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

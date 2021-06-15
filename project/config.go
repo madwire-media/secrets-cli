@@ -94,6 +94,24 @@ func OpenProject() (*Project, error) {
 	return &project, nil
 }
 
+func (project *Project) Save() error {
+	text, err := yaml.Marshal(&project.Config)
+	if err != nil {
+		return err
+	}
+
+	err = ioutil.WriteFile(
+		filepath.Join(project.path, "secrets.yaml"),
+		text,
+		0666,
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (project *Project) applyClassUpdate(update ClassUpdate) error {
 	if update.Reset {
 		project.classes = FilterOptions{}

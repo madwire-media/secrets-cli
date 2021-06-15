@@ -4,6 +4,7 @@ package types
 type VaultAuth struct {
 	Userpass *VaultAuthUserpass `json:"userpass,omitempty"`
 	AppRole  *VaultAuthAppRole  `json:"appRole,omitempty"`
+	OIDC     *VaultAuthOIDC     `json:"oidc,omitempty"`
 	Token    *string            `json:"token,omitempty"`
 }
 
@@ -17,4 +18,9 @@ type VaultAuthUserpass struct {
 type VaultAuthAppRole struct {
 	RoleID   string `json:"roleID"`
 	SecretID string `json:"secretID"`
+}
+
+// VaultAuthOIDC holds a mount path for OIDC auth
+type VaultAuthOIDC struct {
+	Mount string `json:"mount"`
 }

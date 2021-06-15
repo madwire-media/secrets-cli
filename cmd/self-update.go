@@ -8,8 +8,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var updateCmd = &cobra.Command{
-	Use:   "update",
+var selfUpdateCmd = &cobra.Command{
+	Use:   "self-update",
 	Short: "Performs an update check",
 	Long:  "Checks GitHub for a new release and updates itself if there is one",
 	Run: func(cmd *cobra.Command, args []string) {
@@ -22,5 +22,5 @@ var updateCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(updateCmd)
+	rootCmd.AddCommand(selfUpdateCmd)
 }

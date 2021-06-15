@@ -10,8 +10,8 @@ import (
 // SecretConfig is the format for any secret in the secrets.yaml config
 type SecretConfig struct {
 	File  string              `yaml:"file"`
-	Class *string             `yaml:"class"`
-	Vault *vault.SecretConfig `yaml:"vault"`
+	Class *string             `yaml:"class,omitempty"`
+	Vault *vault.SecretConfig `yaml:"vault,omitempty"`
 }
 
 // Prepare prepares this secret for fetching, for example by getting auth

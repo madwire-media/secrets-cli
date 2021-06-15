@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"net/url"
 
+	jwtauth "github.com/hashicorp/vault-plugin-auth-jwt"
+	"github.com/hashicorp/vault/api"
 	"github.com/madwire-media/secrets-cli/types"
 	"github.com/madwire-media/secrets-cli/util"
 	"github.com/madwire-media/secrets-cli/vars"
@@ -30,6 +32,11 @@ func cacheKeyForAuth(host string, vaultAuth *types.VaultAuth) (string, bool, err
 		return key, true, nil
 	}
 
+	if vaultAuth.OIDC != nil {
+		key := fmt.Sprintf("%s,oidc,%s", host, vaultAuth.OIDC.Mount)
+		return key, true, nil
+	}
+
 	return "", false, errors.New("Auth config empty for host " + host)
 }
 
@@ -48,10 +55,10 @@ func ensureAuthConfiguredForURL(parsedURL *url.URL) (*string, *types.VaultAuth, 
 		if !vars.IsTTY {
 			shouldCreateConfig = false
 		} else if vars.UserAuthOnly {
-			fmt.Printf("No auth config for Vault instance at '%s', please enter a username and password to be saved locally\n", parsedURL.Host)
+			fmt.Printf("No auth config for Vault instance at '%s', please enter credentials to be saved locally\n", parsedURL.Host)
 			shouldCreateConfig = true
 		} else if vars.UserAuthLoaded {
-			fmt.Printf("No auth config for Vault instance at '%s', would you like to enter a username and password to be saved locally in your home directory?\n", parsedURL.Host)
+			fmt.Printf("No auth config for Vault instance at '%s', would you like to enter credentials to be saved locally in your home directory?\n", parsedURL.Host)
 			shouldCreateConfig = util.CliQuestionYesNoDefault("Create local login config?", false)
 		} else {
 			shouldCreateConfig = false
@@ -62,37 +69,96 @@ func ensureAuthConfiguredForURL(parsedURL *url.URL) (*string, *types.VaultAuth, 
 		}
 
 		for {
-			username := util.CliQuestion("Username")
-			password, err := util.CliQuestionHidden("Password")
+			vaultAuth, err := GetLoginAuthTTY()
 			if err != nil {
 				return nil, nil, err
 			}
 
-			vaultAuth := types.VaultAuth{
-				Userpass: &types.VaultAuthUserpass{
-					Username: username,
-					Password: password,
-				},
-			}
-
-			token, err := getTokenForURL(parsedURL, &vaultAuth)
+			token, err := getTokenForURL(parsedURL, vaultAuth)
 			if err != nil {
 				fmt.Printf("Error, please try again: %s\n", err.Error())
 			} else {
-				(*vars.UserAuth.Vault)[parsedURL.Host] = vaultAuth
-				(*vars.Auth.Vault)[parsedURL.Host] = vaultAuth
+				(*vars.UserAuth.Vault)[parsedURL.Host] = *vaultAuth
+				(*vars.Auth.Vault)[parsedURL.Host] = *vaultAuth
 
 				err = util.SaveUserAuth()
 				if err != nil {
 					return nil, nil, err
 				}
 
-				return &token, &vaultAuth, nil
+				return &token, vaultAuth, nil
 			}
 		}
 	}
 
 	return nil, configForHost, nil
+}
+
+func GetLoginAuthTTY() (*types.VaultAuth, error) {
+	var auth types.VaultAuth
+
+	choices := []string{
+		"OIDC",
+		"Userpass",
+		"AppRole",
+		"Token",
+	}
+
+	choiceID, err := util.CliChoice("Choose a login method", choices)
+	if err != nil {
+		return nil, err
+	}
+
+	switch choiceID {
+	case 0:
+		oidcMount := util.CliQuestion("OIDC mount path (defaults to \"oidc\")")
+
+		auth.OIDC = &types.VaultAuthOIDC{
+			Mount: oidcMount,
+		}
+
+	case 1:
+		username := util.CliQuestion("Username")
+		password, err := util.CliQuestionHidden("Password")
+		if err != nil {
+			return nil, err
+		}
+
+		auth.Userpass = &types.VaultAuthUserpass{
+			Username: username,
+			Password: password,
+		}
+
+	case 2:
+		roleID := util.CliQuestion("Role ID")
+		secretID := util.CliQuestion("Secret ID")
+
+		auth.AppRole = &types.VaultAuthAppRole{
+			RoleID:   roleID,
+			SecretID: secretID,
+		}
+
+	case 3:
+		token := util.CliQuestion("Token")
+
+		auth.Token = &token
+	}
+
+	return &auth, nil
+}
+
+func TryAuth(host string, vaultAuth *types.VaultAuth) error {
+	parsedURL := &url.URL{
+		Scheme: "https",
+		Host:   host,
+	}
+
+	_, err := getTokenForURL(parsedURL, vaultAuth)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func hasAnyAuth(vaultAuth *types.VaultAuth) bool {
@@ -105,6 +171,10 @@ func hasAnyAuth(vaultAuth *types.VaultAuth) bool {
 	}
 
 	if vaultAuth.Userpass != nil {
+		return true
+	}
+
+	if vaultAuth.OIDC != nil {
 		return true
 	}
 
@@ -122,6 +192,10 @@ func getTokenForURL(parsedURL *url.URL, vaultAuth *types.VaultAuth) (string, err
 
 	if vaultAuth.Userpass != nil {
 		return getTokenForURLWithUserpass(parsedURL, vaultAuth.Userpass)
+	}
+
+	if vaultAuth.OIDC != nil {
+		return getTokenForURLWithOIDC(parsedURL, vaultAuth.OIDC)
 	}
 
 	return "", errors.New("Auth config exists but is empty for " + parsedURL.Host)
@@ -219,4 +293,55 @@ func getTokenForURLWithAppRole(parsedURL *url.URL, appRole *types.VaultAuthAppRo
 	}
 
 	return login.Auth.ClientToken, nil
+}
+
+func getTokenForURLWithOIDC(parsedURL *url.URL, oidc *types.VaultAuthOIDC) (string, error) {
+	if vars.IsCICD {
+		return "", errors.New("OIDC auth not supported in CI/CD mode")
+	}
+
+	var handler jwtauth.CLIHandler
+
+	config := api.DefaultConfig()
+	config.Address = "https://" + parsedURL.Host
+	client, err := api.NewClient(config)
+	if err != nil {
+		return "", err
+	}
+
+	settings := map[string]string{
+		"mount": oidc.Mount,
+	}
+
+	result, err := handler.Auth(client, settings)
+	if err != nil {
+		return "", err
+	}
+
+	return result.Auth.ClientToken, nil
+}
+
+func renewToken(parsedURL *url.URL, token string) error {
+	revokeURL := *parsedURL
+	revokeURL.Path = "/v1/auth/token/renew-self"
+	revokeURL.Fragment = ""
+
+	req, err := http.NewRequest("POST", revokeURL.String(), nil)
+	req.Header.Add("X-Vault-Token", token)
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+
+	respText, err := ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("could not renew token, %d status code: %s", resp.StatusCode, respText)
+	}
+
+	return nil
 }

@@ -15,10 +15,6 @@ var authFiles []string
 var rootCmd = &cobra.Command{
 	Use:   "secrets",
 	Short: "Tracks local secret files to Vault secrets",
-	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Help()
-		os.Exit(1)
-	},
 }
 
 func init() {
@@ -74,7 +70,6 @@ func autoUpdate() {
 // program's main function
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
 		os.Exit(1)
 	}
 }
