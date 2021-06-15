@@ -1,4 +1,13 @@
 # Changelog
+## `v1.1.0`
+* Add OIDC auth support
+* Add auth selector UI
+* Add `secrets add <file>` command to help with editing the `secrets.yaml` file
+* Add `secrets config login [host]` command to interactively configure user and external auth files
+* Add `secrets config autoupdate` command to interactively enable or disable automatic updates
+* Rename `secrets update` to `secrets self-update`
+* Other minor code improvements
+
 ## `v1.0.5`
 * Fix previous bug but now for CI/CD mode
 
