@@ -98,7 +98,7 @@ func (project *Project) Sync(options SyncOptions) error {
 			shouldPush := false
 
 			if vars.IsCICD {
-				return fmt.Errorf("Remote secret for '%s' does not exist or is missing data", relativeFilename)
+				return fmt.Errorf("remote secret for '%s' does not exist or is missing data", relativeFilename)
 			} else if options.FixByDefault {
 				fmt.Printf("Pushing secret '%s' because remote secret is incomplete or does not exist (--fix flag is enabled)\n", relativeFilename)
 				shouldPush = true

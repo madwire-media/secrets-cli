@@ -59,7 +59,7 @@ func TryAutoUpdateSelf() error {
 		return err
 	}
 
-	if *updater.config.AutoUpdate == false {
+	if !*updater.config.AutoUpdate {
 		return nil
 	}
 
@@ -141,7 +141,7 @@ func SetAutoUpdate(shouldAutoUpdate bool) (bool, error) {
 
 func (updater *autoUpdater) Init() error {
 	if vars.IsCICD {
-		return errors.New("Cannot update in CI/CD mode")
+		return errors.New("cannot update in CI/CD mode")
 	}
 
 	if updater.init {
@@ -219,31 +219,31 @@ func (updater *autoUpdater) checkForUpdate(force bool) (*updatedRelease, error) 
 
 	var releaseData releaseResponse
 
-	for {
-		req, err := http.NewRequest("GET", fmt.Sprintf(githubLatestReleaseTemplate, githubRepo), nil)
-		resp, err := http.DefaultClient.Do(req)
-		if err != nil {
-			return nil, err
-		}
+	req, err := http.NewRequest("GET", fmt.Sprintf(githubLatestReleaseTemplate, githubRepo), nil)
+	if err != nil {
+		return nil, err
+	}
 
-		body, err := ioutil.ReadAll(resp.Body)
-		resp.Body.Close()
-		if err != nil {
-			return nil, err
-		}
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
 
-		err = json.Unmarshal(body, &releaseData)
-		if err != nil {
-			return nil, err
-		}
+	body, err := ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
 
-		remoteVersion := normalizeVersion(releaseData.TagName)
-		localVersion := normalizeVersion(vars.BuildVersion)
+	err = json.Unmarshal(body, &releaseData)
+	if err != nil {
+		return nil, err
+	}
 
-		if remoteVersion != localVersion {
-			break
-		}
+	remoteVersion := normalizeVersion(releaseData.TagName)
+	localVersion := normalizeVersion(vars.BuildVersion)
 
+	if remoteVersion == localVersion {
 		return nil, nil
 	}
 
@@ -272,6 +272,10 @@ func (update *updatedRelease) apply(restart bool) error {
 	}
 
 	req, err := http.NewRequest("GET", update.downloadURL, nil)
+	if err != nil {
+		return err
+	}
+
 	req.Header.Set("Accept", "application/octet-stream")
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -281,7 +285,7 @@ func (update *updatedRelease) apply(restart bool) error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
-		return errors.New("Did not get 200 status code from update download")
+		return errors.New("did not get 200 status code from update download")
 	}
 
 	gzipReader, _ := gzip.NewReader(resp.Body)

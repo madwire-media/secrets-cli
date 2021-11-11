@@ -112,10 +112,13 @@ func (controller *vaultController) GetTokenForURL(parsedURL *url.URL) (string, e
 	vaultAuth, ok := (*vars.Auth.Vault)[parsedURL.Host]
 
 	if !ok {
-		return "", errors.New("Host not configured, was PrepareForUrl called?")
+		return "", errors.New("host not configured, was PrepareForUrl called?")
 	}
 
 	key, shouldCache, err := cacheKeyForAuth(parsedURL.Host, &vaultAuth)
+	if err != nil {
+		return "", err
+	}
 
 	if cached, ok := controller.config.TokenCache[key]; ok {
 		if _, ok = controller.validatedTokens[key]; ok {
@@ -178,6 +181,10 @@ func (controller *vaultController) save() error {
 
 func validateTokenForURL(parsedURL *url.URL, token string) bool {
 	req, err := http.NewRequest("GET", parsedURL.String(), nil)
+	if err != nil {
+		return false
+	}
+
 	req.Header.Add("Authorization", "Bearer "+token)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {

@@ -57,7 +57,7 @@ func OpenProject() (*Project, error) {
 		parent := filepath.Dir(project.path)
 
 		if parent == project.path {
-			return nil, errors.New("Could not find a secrets manifest in working directory or parent directories")
+			return nil, errors.New("could not find a secrets manifest in working directory or parent directories")
 		}
 
 		project.path = parent
@@ -77,7 +77,7 @@ func OpenProject() (*Project, error) {
 
 	for _, secret := range project.Config.Secrets {
 		if _, ok := secretFilenames[secret.File]; ok {
-			return nil, fmt.Errorf("Duplicate filename in config: %s", secret.File)
+			return nil, fmt.Errorf("duplicate filename in config: %s", secret.File)
 		}
 
 		secretFilenames[secret.File] = struct{}{}
@@ -203,6 +203,9 @@ func (project *Project) saveClasses() error {
 		classString += "\n"
 
 		err = ioutil.WriteFile(filename, []byte(classString), 0666)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

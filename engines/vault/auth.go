@@ -65,7 +65,7 @@ func ensureAuthConfiguredForURL(parsedURL *url.URL) (*string, *types.VaultAuth, 
 		}
 
 		if !shouldCreateConfig {
-			return nil, nil, fmt.Errorf("No auth config for Vault instance at '%s'", parsedURL.Host)
+			return nil, nil, fmt.Errorf("no auth config for Vault instance at '%s'", parsedURL.Host)
 		}
 
 		for {
@@ -321,27 +321,31 @@ func getTokenForURLWithOIDC(parsedURL *url.URL, oidc *types.VaultAuthOIDC) (stri
 	return result.Auth.ClientToken, nil
 }
 
-func renewToken(parsedURL *url.URL, token string) error {
-	revokeURL := *parsedURL
-	revokeURL.Path = "/v1/auth/token/renew-self"
-	revokeURL.Fragment = ""
+// func renewToken(parsedURL *url.URL, token string) error {
+// 	revokeURL := *parsedURL
+// 	revokeURL.Path = "/v1/auth/token/renew-self"
+// 	revokeURL.Fragment = ""
 
-	req, err := http.NewRequest("POST", revokeURL.String(), nil)
-	req.Header.Add("X-Vault-Token", token)
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return err
-	}
+// 	req, err := http.NewRequest("POST", revokeURL.String(), nil)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	respText, err := ioutil.ReadAll(resp.Body)
-	resp.Body.Close()
-	if err != nil {
-		return err
-	}
+// 	req.Header.Add("X-Vault-Token", token)
+// 	resp, err := http.DefaultClient.Do(req)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	if resp.StatusCode != 200 {
-		return fmt.Errorf("could not renew token, %d status code: %s", resp.StatusCode, respText)
-	}
+// 	respText, err := ioutil.ReadAll(resp.Body)
+// 	resp.Body.Close()
+// 	if err != nil {
+// 		return err
+// 	}
 
-	return nil
-}
+// 	if resp.StatusCode != 200 {
+// 		return fmt.Errorf("could not renew token, %d status code: %s", resp.StatusCode, respText)
+// 	}
+
+// 	return nil
+// }

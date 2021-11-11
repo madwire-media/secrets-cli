@@ -46,10 +46,10 @@ func FormatData(data interface{}, format int) (string, error) {
 			return v, nil
 		}
 
-		return "", errors.New("Data cannot be formatted as text, it is not a string")
+		return "", errors.New("data cannot be formatted as text, it is not a string")
 	}
 
-	return "", errors.New("Unknown format")
+	return "", errors.New("unknown format")
 }
 
 // ParseData parses a string of bytes into the given format
@@ -79,7 +79,7 @@ func ParseData(data []byte, format int) (interface{}, error) {
 		return string(data), nil
 	}
 
-	return "", errors.New("Unknown format")
+	return "", errors.New("unknown format")
 }
 
 // FormatToName returns a text representation of a format code

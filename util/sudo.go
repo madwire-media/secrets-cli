@@ -40,7 +40,7 @@ func handleSudo(action string, params []string) error {
 	switch action {
 	case "replaceExecutable":
 		if len(params) < 1 {
-			return errors.New("Not enough parameters for replaceExecutable action")
+			return errors.New("not enough parameters for replaceExecutable action")
 		}
 
 		newExe := params[0]
@@ -56,7 +56,7 @@ func handleSudo(action string, params []string) error {
 		}
 
 	default:
-		return errors.New("Unknown sudo action")
+		return errors.New("unknown sudo action")
 	}
 
 	return nil

@@ -97,6 +97,9 @@ func addSecret(file string, openProject *project.Project) error {
 	}
 
 	vaultMappingChoice, err := util.CliChoice("How to map the Vault secret to a local file", choices)
+	if err != nil {
+		return err
+	}
 
 	if vaultMappingChoice == 0 {
 		// fromData

@@ -8,7 +8,6 @@ import (
 	"syscall"
 	"time"
 
-	"golang.org/x/crypto/ssh/terminal"
 	"golang.org/x/term"
 )
 
@@ -36,7 +35,7 @@ func CliQuestionYesNo(question string) bool {
 func CliQuestionYesNoDefault(question string, defaultValue bool) bool {
 	var yn string
 
-	if defaultValue == true {
+	if defaultValue {
 		yn = " (Y/n)"
 	} else {
 		yn = " (y/N)"
@@ -75,7 +74,7 @@ func CliQuestion(question string) string {
 func CliQuestionHidden(question string) (string, error) {
 	fmt.Printf("%s (hidden): ", question)
 
-	rawAnswer, err := terminal.ReadPassword(int(syscall.Stdin))
+	rawAnswer, err := term.ReadPassword(int(syscall.Stdin))
 	fmt.Println()
 	if err != nil {
 		return "", err
@@ -120,7 +119,7 @@ type chooser struct {
 
 func newChooser(choices []string) (*chooser, error) {
 	// Set the terminal into raw mode and store the original state for later
-	origState, err := terminal.MakeRaw(0)
+	origState, err := term.MakeRaw(0)
 	if err != nil {
 		return nil, err
 	}
@@ -161,7 +160,7 @@ func newChooser(choices []string) (*chooser, error) {
 
 func (c *chooser) Finish() error {
 	// Restore the terminal state after this function exits
-	defer terminal.Restore(0, c.origState)
+	defer term.Restore(0, c.origState)
 
 	// Restore the cursor after this function exits
 	defer showCursor()
@@ -443,7 +442,7 @@ func eraseRemaining() {
 }
 
 func truncateChoice(s string) (string, error) {
-	width, _, err := terminal.GetSize(0)
+	width, _, err := term.GetSize(0)
 	if err != nil {
 		return "", err
 	}

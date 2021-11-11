@@ -139,6 +139,9 @@ func (fetched *FetchedVaultSecret) UploadNew(value interface{}) (interface{}, er
 		req.Header.Add("Authorization", "Bearer "+token)
 		req.Header.Add("Content-Type", "application/json")
 		resp, err = http.DefaultClient.Do(req)
+		if err != nil {
+			return nil, err
+		}
 
 		body, err = ioutil.ReadAll(resp.Body)
 		resp.Body.Close()
@@ -240,16 +243,16 @@ func (secretConfig *SecretConfig) Fetch() (types.FetchedSecret, error) {
 		case "yaml":
 			secret.format = util.FormatYaml
 		default:
-			return nil, errors.New("Unknown format")
+			return nil, errors.New("unknown format")
 		}
 	} else if secretConfig.Mapping.FromText != nil {
 		secret.format = util.FormatText
 
 		if len(secretConfig.Mapping.FromText.Path) == 0 {
-			return nil, errors.New("No path provided for fromText secret mapping")
+			return nil, errors.New("no path provided for fromText secret mapping")
 		}
 	} else {
-		return nil, errors.New("No mapping provided for secret")
+		return nil, errors.New("no mapping provided for secret")
 	}
 
 	secret.mapping = secretConfig.Mapping

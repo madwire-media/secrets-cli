@@ -28,7 +28,7 @@ func TraversePath(data interface{}, path *[]interface{}) (interface{}, error) {
 				}
 
 			default:
-				return nil, errors.New("Could not traverse data path, tried to index map with non-int, non-string value")
+				return nil, errors.New("could not traverse data path, tried to index map with non-int, non-string value")
 			}
 
 		case []interface{}:
@@ -41,11 +41,11 @@ func TraversePath(data interface{}, path *[]interface{}) (interface{}, error) {
 				}
 
 			default:
-				return nil, errors.New("Could not traverse data path, tried to index array with non-int type")
+				return nil, errors.New("could not traverse data path, tried to index array with non-int type")
 			}
 
 		default:
-			return nil, errors.New("Could not traverse data path, tried to index into a non-array, non-object value")
+			return nil, errors.New("could not traverse data path, tried to index into a non-array, non-object value")
 		}
 	}
 
@@ -94,7 +94,7 @@ func SetAtPath(data *interface{}, path *[]interface{}, newData interface{}) erro
 					}
 
 				default:
-					return errors.New("Could not set data at path, tried to index map with non-int, non-string value")
+					return errors.New("could not set data at path, tried to index map with non-int, non-string value")
 				}
 
 				lastParent = v
@@ -155,7 +155,7 @@ func SetAtPath(data *interface{}, path *[]interface{}, newData interface{}) erro
 				lastParent = v
 
 			default:
-				return errors.New("Could not set data at path, tried to index into a non-array, non-object value")
+				return errors.New("could not set data at path, tried to index into a non-array, non-object value")
 			}
 		}
 	}

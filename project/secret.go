@@ -21,7 +21,7 @@ func (secretConfig *SecretConfig) Prepare() error {
 		return secretConfig.Vault.Prepare()
 	}
 
-	return errors.New("No secret engine defined for secret")
+	return errors.New("no secret engine defined for secret")
 }
 
 // Fetch fetches this secret from the remote server, returning an interface
@@ -31,5 +31,5 @@ func (secretConfig *SecretConfig) Fetch() (types.FetchedSecret, error) {
 		return secretConfig.Vault.Fetch()
 	}
 
-	return nil, errors.New("No secret engine defined for secret")
+	return nil, errors.New("no secret engine defined for secret")
 }

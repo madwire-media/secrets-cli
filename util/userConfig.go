@@ -37,7 +37,7 @@ func GetConfigDir() (string, error) {
 			return "", err
 		}
 	} else if !info.IsDir() {
-		return "", errors.New("Config path is not a directory")
+		return "", errors.New("config path is not a directory")
 	}
 
 	return dir, nil
