@@ -1,4 +1,11 @@
 # Changelog
+## `v1.2.0`
+* Update `--pull` and `--push` behavior to be "only X" instead of "X by default"
+    * When there are conflicts or errors between local and remote, the flags will still work as normal
+    * When there is only a local change, `--pull` will now prevent that change from being pushed
+    * Similarly, when there is only a remote change, `--push` will now prevent that change from being pulled
+* Fix linting warnings in the code
+
 ## `v1.1.1`
 * Fix `secrets config login` AppRole auth with credentials supplied as arguments
 
