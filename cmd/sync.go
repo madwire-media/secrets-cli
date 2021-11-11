@@ -31,14 +31,14 @@ use. Secrets without an assigned class will always be synced.`,
 			return
 		}
 
-		pullByDefault, _ := cmd.Flags().GetBool("pull")
-		pushByDefault, _ := cmd.Flags().GetBool("push")
+		pullOnly, _ := cmd.Flags().GetBool("pull")
+		pushOnly, _ := cmd.Flags().GetBool("push")
 		fixByDefault, _ := cmd.Flags().GetBool("fix")
 
 		options := project.SyncOptions{
-			PullByDefault: pullByDefault,
-			PushByDefault: pushByDefault,
-			FixByDefault:  fixByDefault,
+			PullOnly:     pullOnly,
+			PushOnly:     pushOnly,
+			FixByDefault: fixByDefault,
 			Classes: project.ClassUpdate{
 				FilterOptions: project.FilterOptions{
 					Add:      []string{},
@@ -77,7 +77,7 @@ use. Secrets without an assigned class will always be synced.`,
 func init() {
 	rootCmd.AddCommand(syncCmd)
 
-	syncCmd.Flags().Bool("pull", false, "overwrite local secrets with their remote versions by default")
-	syncCmd.Flags().Bool("push", false, "overwrite remote secrets with their local copies by default")
+	syncCmd.Flags().Bool("pull", false, "prefer pulling remote secrets during conflicts, and don't push local changes")
+	syncCmd.Flags().Bool("push", false, "prefer pushing local changes during conflicts, and don't pull remote changes")
 	syncCmd.Flags().Bool("fix", false, "fix issues with secrets by default")
 }

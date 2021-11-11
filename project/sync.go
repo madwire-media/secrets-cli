@@ -16,17 +16,17 @@ import (
 // SyncOptions contains every relevant option for the sync operation, mostly
 // intended to be set with CLI flags
 type SyncOptions struct {
-	PullByDefault bool
-	PushByDefault bool
-	FixByDefault  bool
-	Classes       ClassUpdate
+	PullOnly     bool
+	PushOnly     bool
+	FixByDefault bool
+	Classes      ClassUpdate
 }
 
 // Sync prepares every secret, fetches every secret, and does a 3-way diff
 // between the local files, the local lock file, and the remote secrets,
 // pulling or pushing secrets where relevant
 func (project *Project) Sync(options SyncOptions) error {
-	if options.PullByDefault && options.PushByDefault {
+	if options.PullOnly && options.PushOnly {
 		return errors.New("--pull flag and --push flag cannot both be enabled")
 	}
 
@@ -208,10 +208,10 @@ func (project *Project) Sync(options SyncOptions) error {
 				if vars.IsCICD {
 					fmt.Printf("Overwriting new secret file '%s' with remote copy (--cicd flag is enabled)\n", relativeFilename)
 					shouldPull = true
-				} else if options.PullByDefault {
+				} else if options.PullOnly {
 					fmt.Printf("Overwiting new secret file '%s' with remote copy (--pull flag is enabled)\n", relativeFilename)
 					shouldPull = true
-				} else if options.PushByDefault {
+				} else if options.PushOnly {
 					fmt.Printf("Overwriting new remote secret with local copy '%s' (--push flag is enabled)\n", relativeFilename)
 					shouldPush = true
 				} else if !vars.IsTTY {
@@ -253,10 +253,10 @@ func (project *Project) Sync(options SyncOptions) error {
 						if vars.IsCICD {
 							fmt.Printf("Overwriting modified secret file '%s' with remote copy (--cicd flag is enabled)\n", relativeFilename)
 							shouldPull = true
-						} else if options.PullByDefault {
+						} else if options.PullOnly {
 							fmt.Printf("Overwiting modified secret file '%s' with remote copy (--pull flag is enabled)\n", relativeFilename)
 							shouldPull = true
-						} else if options.PushByDefault {
+						} else if options.PushOnly {
 							fmt.Printf("Overwriting remote secret with modified local copy '%s' (--push flag is enabled)\n", relativeFilename)
 							shouldPush = true
 						} else if !vars.IsTTY {
@@ -286,14 +286,23 @@ func (project *Project) Sync(options SyncOptions) error {
 					} else {
 						// Only the remote version changed
 
-						fmt.Printf("Pulling new version of secret '%s'\n", relativeFilename)
+						shouldPull := true
 
-						err := project.pullSecret(secret, fetchedSecret, &fileState)
-						if err != nil {
-							return err
+						if options.PushOnly {
+							fmt.Printf("Not pulling modifed remote secret to local file '%s' (--push flag is enabled)\n", relativeFilename)
+							shouldPull = false
 						}
 
-						fmt.Println("    done")
+						if shouldPull {
+							fmt.Printf("Pulling new version of secret '%s'\n", relativeFilename)
+
+							err := project.pullSecret(secret, fetchedSecret, &fileState)
+							if err != nil {
+								return err
+							}
+
+							fmt.Println("    done")
+						}
 					}
 				} else {
 					// Remote version didn't change
@@ -301,14 +310,26 @@ func (project *Project) Sync(options SyncOptions) error {
 					if fileState.LocalHash != prevState.LocalHash {
 						// Only the local version changed
 
-						fmt.Printf("Pushing new version of secret '%s'\n", relativeFilename)
+						shouldPush := true
 
-						err := project.pushSecret(fetchedSecret, &fileState)
-						if err != nil {
-							return err
+						if vars.IsCICD {
+							fmt.Printf("Not pushing modified secret file '%s' (--cicd flag is enabled)\n", relativeFilename)
+							shouldPush = false
+						} else if options.PullOnly {
+							fmt.Printf("Not pushing modified secret file '%s' (--pull flag is enabled)\n", relativeFilename)
+							shouldPush = false
 						}
 
-						fmt.Println("    done")
+						if shouldPush {
+							fmt.Printf("Pushing new version of secret '%s'\n", relativeFilename)
+
+							err := project.pushSecret(fetchedSecret, &fileState)
+							if err != nil {
+								return err
+							}
+
+							fmt.Println("    done")
+						}
 					} else {
 						// Neither version changed, lockfile is corrupt
 
