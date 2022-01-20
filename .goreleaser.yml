@@ -7,7 +7,7 @@ before:
     # you may remove this if you don't need go generate
     - go generate ./...
 builds:
-  - binary: secrets-cli
+  - binary: secrets
     id: linux
     goos:
       - linux
@@ -17,7 +17,7 @@ builds:
       - -s -w
       - -X github.com/madwire-media/secrets-cli/vars.BuildVersion={{ .Version }}
       - -X github.com/madwire-media/secrets-cli/vars.BuildCommit={{ .Commit }}
-  - binary: secrets-cli
+  - binary: secrets
     id: windows
     goos:
       - windows
@@ -27,7 +27,7 @@ builds:
       - -s -w
       - -X github.com/madwire-media/secrets-cli/vars.BuildVersion={{ .Version }}
       - -X github.com/madwire-media/secrets-cli/vars.BuildCommit={{ .Commit }}
-  - binary: secrets-cli
+  - binary: secrets
     id: macos-amd64
     goos:
       - darwin
@@ -43,7 +43,7 @@ builds:
       post:
         - gon .gon-amd64.json
         - mv dist/secrets-cli-macos-amd64.dmg dist/secrets-cli_{{ .Version }}_darwin_amd64.dmg
-  - binary: secrets-cli
+  - binary: secrets
     id: macos-arm64
     goos:
       - darwin

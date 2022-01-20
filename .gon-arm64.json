@@ -1,5 +1,5 @@
 {
-  "source" : ["./dist/macos-arm64_darwin_arm64/secrets-cli"],
+  "source" : ["./dist/macos-arm64_darwin_arm64/secrets"],
   "bundle_id" : "com.madwire.secrets-cli",
   "apple_id": {
     "username" : "chris.meyers@madwire.com",
