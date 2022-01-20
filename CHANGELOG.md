@@ -1,4 +1,7 @@
 # Changelog
+## `v1.3.2`
+* Fixed binary name in release assets
+
 ## `v1.3.1`
 * Included macOS .tar.gz archives in GitHub release
 
