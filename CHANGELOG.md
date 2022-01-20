@@ -1,4 +1,8 @@
 # Changelog
+## `v1.3.0`
+* Added Apple silicon support (darwin_arm64)
+* Signed and notarized macOS binaries
+
 ## `v1.2.0`
 * Update `--pull` and `--push` behavior to be "only X" instead of "X by default"
     * When there are conflicts or errors between local and remote, the flags will still work as normal
