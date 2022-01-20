@@ -74,9 +74,15 @@ archives:
     name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}'
     files:
       - none*
-  - id: darwin-archive
+  - id: darwin-amd64-archive
     builds:
       - macos-amd64
+    format: tar.gz
+    name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}'
+    files:
+      - none*
+  - id: darwin-arm64-archive
+    builds:
       - macos-arm64
     format: tar.gz
     name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}'
@@ -86,6 +92,8 @@ release:
   ids:
     - linux-archive
     - windows-archive
+    - darwin-amd64-archive
+    - darwin-arm64-archive
   extra_files:
     - glob: ./dist/*.dmg
 checksum:
