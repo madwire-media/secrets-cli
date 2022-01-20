@@ -1,4 +1,7 @@
 # Changelog
+## `v1.3.1`
+* Included macOS .tar.gz archives in GitHub release
+
 ## `v1.3.0`
 * Added Apple silicon support (darwin_arm64)
 * Signed and notarized macOS binaries
