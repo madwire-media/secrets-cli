@@ -43,6 +43,22 @@ builds:
       post:
         - gon .gon-amd64.json
         - mv dist/secrets-cli-macos-amd64.dmg dist/secrets-cli_{{ .Version }}_darwin_amd64.dmg
+  - binary: secrets-cli
+    id: macos-arm64
+    goos:
+      - darwin
+    goarch:
+      - arm64
+    env:
+      - CGO_ENABLED=0
+    ldflags:
+      - -s -w
+      - -X github.com/madwire-media/secrets-cli/vars.BuildVersion={{ .Version }}
+      - -X github.com/madwire-media/secrets-cli/vars.BuildCommit={{ .Commit }}
+    hooks:
+      post:
+        - gon .gon-arm64.json
+        - mv dist/secrets-cli-macos-arm64.dmg dist/secrets-cli_{{ .Version }}_darwin_arm64.dmg
 archives:
   - id: linux-archive
     builds:
@@ -61,6 +77,7 @@ archives:
   - id: darwin-archive
     builds:
       - macos-amd64
+      - macos-arm64
     format: tar.gz
     name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}'
     files:
